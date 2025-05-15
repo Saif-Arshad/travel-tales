@@ -4,11 +4,13 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Dialog } from "@radix-ui/react-dialog";
-import { Edit, Loader2, Pencil } from "lucide-react";
+import { Edit, Loader2, Pencil, Trash2, ExternalLink } from "lucide-react";
 import toast from "react-hot-toast";
 import { Label } from "@/components/ui/label";
 import uploadToCloudinary from "@/lib/uploadToCloudinary";
 import { useUser } from "@/lib/useUser";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface UserProfile {
     id: string;
@@ -22,11 +24,30 @@ interface UserProfile {
     userType: string;
 }
 
+interface BlogPost {
+    id: number;
+    title: string;
+    description: string;
+    content: string;
+    country_name: string;
+    main_image: string;
+    visit_date: string;
+    created_at: string;
+    likes_count: number;
+    dislikes_count: number;
+}
+
 function Page() {
+    const router = useRouter();
     const { user } = useUser();
     const [loading, setLoading] = useState(true);
     const [isOpen, setIsOpen] = useState(false);
     const [profileData, setProfileData] = useState<UserProfile | null>(null);
+    const [userBlogs, setUserBlogs] = useState<BlogPost[]>([]);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [blogToDelete, setBlogToDelete] = useState<number | null>(null);
+    const [isBlogLoading, setBlogLoading] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     interface EditProfileData {
         profileImage: any;
@@ -70,6 +91,26 @@ function Page() {
         };
 
         fetchProfileData();
+    }, [user?.id]);
+
+    // Fetch user's blog posts
+    useEffect(() => {
+        const fetchUserBlogs = async () => {
+            if (user?.id) {
+                try {
+                    setBlogLoading(true);
+                    const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/blogs?user_id=${user.id}`);
+                    setUserBlogs(response.data);
+                } catch (error) {
+                    console.error("Error fetching user blogs:", error);
+                    toast.error("Failed to load blog posts");
+                } finally {
+                    setBlogLoading(false);
+                }
+            }
+        };
+
+        fetchUserBlogs();
     }, [user?.id]);
 
     const onClose = () => {
@@ -139,6 +180,30 @@ function Page() {
             [name]: value,
         }));
     };
+
+    const handleDeleteClick = (blogId: number) => {
+        setBlogToDelete(blogId);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!blogToDelete) return;
+
+        try {
+            setIsDeleting(true);
+            await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/blogs/${blogToDelete}`);
+            setUserBlogs(prevBlogs => prevBlogs.filter(blog => blog.id !== blogToDelete));
+            toast.success("Blog post deleted successfully");
+            setIsDeleteDialogOpen(false);
+        } catch (error) {
+            console.error("Error deleting blog:", error);
+            toast.error("Failed to delete blog post");
+        } finally {
+            setIsDeleting(false);
+            setBlogToDelete(null);
+        }
+    };
+
     if(loading){
         return <div className="flex justify-center min-h-screen items-center h-screen">
             <Loader2 className="h-10 w-10 animate-spin" />
@@ -208,6 +273,84 @@ function Page() {
                     </div>
                 </div>
               
+              <div className="flex flex-col gap-4 mt-10 border-t border-gray-200 pt-10">
+                <div className="flex items-center gap-4 justify-between">
+                    <p className="text-2xl font-bold text-gray-900">
+                        Blog Posts
+                    </p>
+                    <Link href="/create-post">
+                        <button className="py-2.5 px-6 rounded-lg text-sm font-medium bg-indigo-200 text-indigo-600">
+                            Create Post
+                        </button>
+                    </Link>
+                </div>
+
+                {isBlogLoading ? (
+                    <div className="flex justify-center py-10">
+                        <Loader2 className="h-10 w-10 animate-spin" />
+                    </div>
+                ) : userBlogs.length === 0 ? (
+                    <div className="text-center py-10">
+                        <p className="text-gray-500">No blog posts yet</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                        {userBlogs.map((blog) => (
+                            <div key={blog.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                <div className="relative h-48">
+                                    <img
+                                        src={blog.main_image || "/default-blog-cover.jpg"}
+                                        alt={blog.title}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div className="p-4">
+                                    <h3 className="font-bold text-lg text-gray-900 mb-2">{blog.title}</h3>
+                                    <p className="text-gray-600 text-sm mb-2 line-clamp-2">{blog.description}</p>
+                                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                                        <span>{new Date(blog.created_at).toLocaleDateString()}</span>
+                                        <span>{blog.country_name}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-sm text-gray-500">
+                                                {blog.likes_count} likes
+                                            </span>
+                                            <span className="text-sm text-gray-500">
+                                                {blog.dislikes_count} dislikes
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => router.push(`/create-post?id=${blog.id}`)}
+                                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+                                                title="Edit"
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteClick(blog.id)}
+                                                className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                                                title="Delete"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                            <Link href={`/blogs/${blog.id}`}>
+                                                <button
+                                                    className="p-2 text-gray-600 hover:bg-gray-50 rounded-full"
+                                                    title="View"
+                                                >
+                                                    <ExternalLink className="h-4 w-4" />
+                                                </button>
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+              </div>
 
                 <Dialog open={isOpen} onOpenChange={onClose}>
                     <DialogContent className="p-6">
@@ -269,6 +412,43 @@ function Page() {
                                     className="py-2.5 px-6 rounded-lg text-sm font-medium text-white bg-indigo-600"
                                 >
                                     {loading ? "Updating..." : "Update"}
+                                </button>
+                            </div>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Delete Confirmation Dialog */}
+                <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                    <DialogContent className="p-6">
+                        <DialogHeader>
+                            <DialogTitle>Delete Blog Post</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <p className="text-gray-600">Are you sure you want to delete this blog post? This action cannot be undone.</p>
+                        </div>
+                        <DialogFooter>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setIsDeleteDialogOpen(false)}
+                                    className="py-2.5 px-6 rounded-lg text-sm font-medium bg-gray-200 text-gray-600"
+                                    disabled={isDeleting}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDeleteConfirm}
+                                    className="py-2.5 px-6 rounded-lg text-sm font-medium bg-red-600 text-white"
+                                    disabled={isDeleting}
+                                >
+                                    {isDeleting ? (
+                                        <div className="flex items-center gap-2">
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            <span>Deleting...</span>
+                                        </div>
+                                    ) : (
+                                        "Delete"
+                                    )}
                                 </button>
                             </div>
                         </DialogFooter>

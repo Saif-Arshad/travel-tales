@@ -22,7 +22,7 @@ function Header() {
     },
    
     {
-        name:"Latest Blog",
+        name:"All Blog",
         link:"/blog"
     },
   

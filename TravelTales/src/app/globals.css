@@ -82,3 +82,17 @@
     @apply bg-background text-foreground;
    }
 }
+
+.ql-toolbar.ql-snow {
+  border: none !important;
+  border-top-right-radius: 10px !important;
+  border-top-left-radius: 10px !important;
+  background-color:  rgb(16 185 129) !important;
+}
+.ql-container.ql-snow {
+  border: none !important;
+  background-color: rgb(208, 214, 214) !important;
+  border-bottom-right-radius: 10px !important;
+  border-bottom-left-radius: 10px !important;
+  min-height: 155px !important;
+}

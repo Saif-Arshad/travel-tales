@@ -23,7 +23,15 @@ const registerSchema = Yup.object().shape({
 });
 
 const forgotPasswordSchema = Yup.object().shape({
+    name: Yup.string().required("Required"),
     email: Yup.string().email("Invalid email").required("Required"),
+});
+
+const resetPasswordSchema = Yup.object().shape({
+    newPassword: Yup.string().required("Required").min(6, "Minimum 6 characters"),
+    confirmPassword: Yup.string()
+        .oneOf([Yup.ref('newPassword')], 'Passwords must match')
+        .required('Required'),
 });
 
 export const setCookie = (cName: string, cValue: any, exDays: number) => {
@@ -57,6 +65,8 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
     const [authMode, setAuthMode] = useState<"login" | "register" | "forgotPassword">("register");
     const [showLoginPassword, setShowLoginPassword] = useState(false);
     const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [verifiedUserId, setVerifiedUserId] = useState<number | null>(null);
     const params = useSearchParams();
     const router = useRouter();
     const errorInParams = params.get("error");
@@ -91,7 +101,40 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
         setSubmitting(false);
     };
 
-  
+    const handleForgotPassword = async (values: any, { setSubmitting }: any) => {
+        try {
+            const response = await axios.post(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth//verify-reset-credentials`,
+                {
+                    name: values.name,
+                    email: values.email,
+                }
+            );
+            setVerifiedUserId(response.data.userId);
+            toast.success("Credentials verified. Please set your new password.");
+        } catch (error: any) {
+            toast.error(error.response?.data?.error || "Verification failed");
+        }
+        setSubmitting(false);
+    };
+
+    const handleResetPassword = async (values: any, { setSubmitting }: any) => {
+        try {
+            await axios.post(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/reset-password`,
+                {
+                    userId: verifiedUserId,
+                    newPassword: values.newPassword,
+                }
+            );
+            toast.success("Password reset successfully");
+            setAuthMode("login");
+            setVerifiedUserId(null);
+        } catch (error: any) {
+            toast.error(error.response?.data?.error || "Password reset failed");
+        }
+        setSubmitting(false);
+    };
 
     const Loader = ({ text }: { text: string }) => (
         <div className="flex items-center space-x-2">
@@ -237,6 +280,15 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
                                                                 className="text-red-500 text-xs mt-1"
                                                             />
 
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <button
+                                                                type="button"
+                                                                className="text-sm text-blue-600 hover:underline"
+                                                                onClick={() => setAuthMode("forgotPassword")}
+                                                            >
+                                                                Forgot Password?
+                                                            </button>
                                                         </div>
                                                         <div>
                                                             <button
@@ -412,7 +464,169 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
                                     </Transition>
                                 )}
 
-                               
+                                {authMode === "forgotPassword" && (
+                                    <Transition
+                                        appear
+                                        show={authMode === "forgotPassword"}
+                                        as={Fragment}
+                                        enter="transition ease-out duration-300"
+                                        enterFrom="opacity-0 scale-95"
+                                        enterTo="opacity-100 scale-100"
+                                        leave="transition ease-in duration-200"
+                                        leaveFrom="opacity-100 scale-100"
+                                        leaveTo="opacity-0 scale-95"
+                                    >
+                                        <div className="text-start">
+                                            <Dialog.Title className="text-2xl font-bold">
+                                                Reset Password
+                                            </Dialog.Title>
+                                            <Dialog.Description className="text-sm text-gray-600 mb-6">
+                                                {verifiedUserId ? "Enter your new password" : "Verify your credentials"}
+                                            </Dialog.Description>
+
+                                            <Formik
+                                                initialValues={
+                                                    verifiedUserId
+                                                        ? { newPassword: "", confirmPassword: "" }
+                                                        : { name: "", email: "" }
+                                                }
+                                                validationSchema={verifiedUserId ? resetPasswordSchema : forgotPasswordSchema}
+                                                onSubmit={verifiedUserId ? handleResetPassword : handleForgotPassword}
+                                            >
+                                                {({ touched, errors, isSubmitting }) => (
+                                                    <Form className="space-y-4">
+                                                        {!verifiedUserId ? (
+                                                            <>
+                                                                <div>
+                                                                    <label htmlFor="name" className="block mb-2 ml-1 font-medium text-sm">
+                                                                        Name
+                                                                    </label>
+                                                                    <Field
+                                                                        type="text"
+                                                                        name="name"
+                                                                        id="name"
+                                                                        placeholder="Your name"
+                                                                        className={`w-full rounded-full px-4 p-2 outline-none border focus:ring-1 transition-colors ${
+                                                                            touched.name && errors.name
+                                                                                ? "border-red-500 focus:ring-red-500"
+                                                                                : "border-primaryColor focus:ring-primaryColor"
+                                                                        }`}
+                                                                    />
+                                                                    <ErrorMessage
+                                                                        name="name"
+                                                                        component="div"
+                                                                        className="text-red-500 text-xs mt-1"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <label htmlFor="email" className="block mb-2 ml-1 font-medium text-sm">
+                                                                        Email
+                                                                    </label>
+                                                                    <Field
+                                                                        type="email"
+                                                                        name="email"
+                                                                        id="email"
+                                                                        placeholder="your@email.com"
+                                                                        className={`w-full rounded-full px-4 p-2 outline-none border focus:ring-1 transition-colors ${
+                                                                            touched.email && errors.email
+                                                                                ? "border-red-500 focus:ring-red-500"
+                                                                                : "border-primaryColor focus:ring-primaryColor"
+                                                                        }`}
+                                                                    />
+                                                                    <ErrorMessage
+                                                                        name="email"
+                                                                        component="div"
+                                                                        className="text-red-500 text-xs mt-1"
+                                                                    />
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div>
+                                                                    <label htmlFor="newPassword" className="block mb-2 ml-1 font-medium text-sm">
+                                                                        New Password
+                                                                    </label>
+                                                                    <div className="relative">
+                                                                        <Field
+                                                                            type={showNewPassword ? "text" : "password"}
+                                                                            name="newPassword"
+                                                                            id="newPassword"
+                                                                            placeholder="••••••••"
+                                                                            className={`w-full rounded-full px-4 p-2 outline-none border focus:ring-1 transition-colors ${
+                                                                                touched.newPassword && errors.newPassword
+                                                                                    ? "border-red-500 focus:ring-red-500"
+                                                                                    : "border-primaryColor focus:ring-primaryColor"
+                                                                            }`}
+                                                                        />
+                                                                        <button
+                                                                            type="button"
+                                                                            className="absolute top-1/2 -translate-y-1/2 right-4 text-gray-500 hover:text-gray-700"
+                                                                            onClick={() => setShowNewPassword(!showNewPassword)}
+                                                                        >
+                                                                            {showNewPassword ? <FiEyeOff /> : <FiEye />}
+                                                                        </button>
+                                                                    </div>
+                                                                    <ErrorMessage
+                                                                        name="newPassword"
+                                                                        component="div"
+                                                                        className="text-red-500 text-xs mt-1"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <label htmlFor="confirmPassword" className="block mb-2 ml-1 font-medium text-sm">
+                                                                        Confirm Password
+                                                                    </label>
+                                                                    <Field
+                                                                        type="password"
+                                                                        name="confirmPassword"
+                                                                        id="confirmPassword"
+                                                                        placeholder="••••••••"
+                                                                        className={`w-full rounded-full px-4 p-2 outline-none border focus:ring-1 transition-colors ${
+                                                                            touched.confirmPassword && errors.confirmPassword
+                                                                                ? "border-red-500 focus:ring-red-500"
+                                                                                : "border-primaryColor focus:ring-primaryColor"
+                                                                        }`}
+                                                                    />
+                                                                    <ErrorMessage
+                                                                        name="confirmPassword"
+                                                                        component="div"
+                                                                        className="text-red-500 text-xs mt-1"
+                                                                    />
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                        <div>
+                                                            <button
+                                                                type="submit"
+                                                                disabled={isSubmitting}
+                                                                className="w-full mt-3 text-white py-2 rounded-full bg-gradient-to-br from-purple-700 to-blue-900 transition-colors flex items-center justify-center"
+                                                            >
+                                                                {isSubmitting ? (
+                                                                    <Loader text={verifiedUserId ? "Resetting..." : "Verifying..."} />
+                                                                ) : (
+                                                                    verifiedUserId ? "Reset Password" : "Verify Credentials"
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                    </Form>
+                                                )}
+                                            </Formik>
+                                            <div className="text-end mt-2 mr-2 text-sm">
+                                                Remember your password?{" "}
+                                                <button
+                                                    type="button"
+                                                    className="text-blue-600 hover:underline"
+                                                    onClick={() => {
+                                                        setAuthMode("login");
+                                                        setVerifiedUserId(null);
+                                                    }}
+                                                >
+                                                    Login
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </Transition>
+                                )}
                             </Dialog.Panel>
                         </Transition.Child>
                     </div>

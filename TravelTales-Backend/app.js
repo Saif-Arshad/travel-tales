@@ -35,6 +35,7 @@ function initDB() {
         UNIQUE(userId, followerId)
       )
     `);
+    
 
     db.run(`
       CREATE TABLE IF NOT EXISTS followings (
@@ -45,6 +46,45 @@ function initDB() {
         FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (followingId) REFERENCES users(id) ON DELETE CASCADE,
         UNIQUE(userId, followingId)
+      )
+    `);
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS blogs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        country_name TEXT NOT NULL,
+        main_image TEXT,
+        visit_date DATE NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS blog_likes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        blog_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE,
+        UNIQUE(user_id, blog_id)
+      )
+    `);
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS blog_dislikes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        blog_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE,
+        UNIQUE(user_id, blog_id)
       )
     `);
 
@@ -65,9 +105,11 @@ initDB();
 
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const blogRoutes = require('./routes/blogRoutes');
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
+app.use('/blogs', blogRoutes);
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });

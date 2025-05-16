@@ -30,7 +30,8 @@ router.post('/', async (req, res) => {
 
 // Get all blog posts
 router.get('/', (req, res) => {
-    db.all(`
+    const userId = req.query.user_id;
+    let query = `
         SELECT b.*, 
             u.id as user_id,
             u.name as user_name,
@@ -39,8 +40,17 @@ router.get('/', (req, res) => {
             (SELECT COUNT(*) FROM blog_dislikes WHERE blog_id = b.id) as dislikes_count
         FROM blogs b
         LEFT JOIN users u ON b.user_id = u.id
-        ORDER BY b.created_at DESC
-    `, [], (err, rows) => {
+    `;
+    
+    if (userId) {
+        query += ' WHERE b.user_id = ?';
+    }
+    
+    query += ' ORDER BY b.created_at DESC';
+
+    const params = userId ? [userId] : [];
+    
+    db.all(query, params, (err, rows) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: 'Failed to fetch blogs' });

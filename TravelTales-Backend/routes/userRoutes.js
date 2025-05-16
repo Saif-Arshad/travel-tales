@@ -2,21 +2,16 @@ const express = require('express');
 const router = express.Router();
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('TravelTales.db');
+const { getUserById, updateUser, toggleFollow } = require('../controllers/userController');
 
 // Get user by ID
-router.get('/:id', (req, res) => {
-    const { id } = req.params;
-    
-    db.get(`SELECT id, name, profile_picture, banner_picture, email FROM users WHERE id = ?`, [id], (err, user) => {
-        if (err) {
-            return res.status(500).json({ error: 'Database error' });
-        }
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        res.json(user);
-    });
-});
+router.get('/:id', getUserById);
+
+// Update user profile
+router.put('/:id', updateUser);
+
+// Toggle follow status
+router.post('/toggle-follow', toggleFollow);
 
 // Check follow status
 router.get('/follow-status/:targetUserId', (req, res) => {

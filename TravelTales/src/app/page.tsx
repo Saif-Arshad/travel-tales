@@ -36,7 +36,6 @@ const fetchLatestBlogs = async () => {
     try {
         setLoading(true);
         const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/blogs`);
-        // Get only the latest 3 blogs
         setLatestBlogs(response.data.slice(0, 3));
     } catch (error) {
         console.error('Error fetching latest blogs:', error);
@@ -50,8 +49,6 @@ const fetchLatestBlogs = async () => {
         <div  className='flex  relative flex-col'>
             <video className='h-[75vh]  w-screen object-cover' src={'https://utfs.io/f/71eb9a0e-1214-4254-85f9-c4515eda15f1-a9yobd.mp4'} autoPlay loop muted></video> 
             </div>
-           
-           
     </div>
     <div className="w-full flex items-center justify-center mt-60 sm:mt-40 md:mt-28 relative">
     <div className="w-11/12 flex my-6 flex-col lg:flex-row flex-wrap justify-center">
@@ -62,7 +59,6 @@ const fetchLatestBlogs = async () => {
          className="object-cover"
           width={500}
         alt="About-Us"
-        
         ></Image>
     </div>
     <div className="w-full lg:w-6/12">
@@ -76,11 +72,6 @@ const fetchLatestBlogs = async () => {
 <p className='my-3 mt-7 text-lg'>
   Welcome to <strong>TravelTales</strong>, a dynamic platform created as part of the <em>University of Westminster</em>'s School of Computer Science and Engineering coursework. This application empowers users to share personal travel experiences enriched with real-time country data such as flags, currencies, and capital cities. Built using Node.js and integrated with secure user authentication and RESTful APIs, it offers an interactive and socially engaging environment where stories come to life. Explore the world through the eyes of fellow travelers and contribute your own journey today.
 </p>
-
-           
-           
-   
-
     </div>
     </div>
     </div>
@@ -97,7 +88,6 @@ const fetchLatestBlogs = async () => {
                     {latestBlogs.map((blog) => (
                         <Link key={blog.id} href={`/blogs/${blog.id}`}>
                             <div className="group bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                                {/* Blog Image */}
                                 <div className="relative h-48">
                                     <img
                                         src={blog.main_image || "/default-blog-cover.jpg"}
@@ -110,11 +100,9 @@ const fetchLatestBlogs = async () => {
                                     </div>
                                 </div>
 
-                                {/* Blog Content */}
                                 <div className="p-4">
                                     <p className="text-gray-600 text-sm line-clamp-2 mb-4">{blog.description}</p>
                                     
-                                    {/* Meta Information */}
                                     <div className="flex items-center justify-between text-sm text-gray-500">
                                         <div className="flex items-center gap-2">
                                             <Calendar className="h-4 w-4" />
@@ -126,7 +114,6 @@ const fetchLatestBlogs = async () => {
                                         </div>
                                     </div>
 
-                                    {/* Author */}
                                     <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
                                         <img
                                             src={blog.user?.profile_picture || "/default-profile.png"}
@@ -223,7 +210,6 @@ const fetchLatestBlogs = async () => {
             </div>
         </div>
     </section>
-
     </>
   );
 }

@@ -6,6 +6,7 @@ import { useUser } from '@/lib/useUser';
 import { UserDropDown } from '../userDropDown';
 import AuthModal from '../authmodel';
 import { FiUsers } from 'react-icons/fi';
+import { UserRound } from 'lucide-react';
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -54,7 +55,7 @@ function Header() {
                 <button
                   onClick={() => setAuthOpen(true)}
                 >
-                  <FiUsers size={22} className="text-black" />
+                  <UserRound size={22} className="text-black" />
                 </button>
               </>
           }

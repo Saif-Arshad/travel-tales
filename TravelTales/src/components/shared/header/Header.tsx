@@ -29,6 +29,14 @@ function Header() {
   
   ]
 
+  const AuthenticatedLinks = [
+    ...Links,
+    {
+        name: "My Feed",
+        link: "/feed"
+    }
+  ]
+
   return (
     <div>
       <nav className="bg-bg-gray-100  w-full ">
@@ -105,14 +113,13 @@ function Header() {
           >
             <ul className="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
           {
-            Links.map((item,index)=>(
+            (user ? AuthenticatedLinks : Links).map((item,index)=>(
                 <li key={index}>
                 <Link
                   href={item.link}
                   className="block py-2 font-semibold pl-3 pr-4 text-black  rounded lg:bg-transparent lg:hover:text-emerald-600 lg:p-0 "
                   aria-current="page"
                 >
-
                   {item.name}
                 </Link>
               </li>

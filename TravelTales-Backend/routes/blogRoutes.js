@@ -256,4 +256,48 @@ router.get('/:id/country-info', async (req, res) => {
     }
 });
 
+router.get('/feed/:userId', (req, res) => {
+    const { userId } = req.params;
+    
+    const query = `
+        SELECT b.*, 
+            u.id as user_id,
+            u.name as user_name,
+            u.profile_picture as user_profile_picture,
+            (SELECT COUNT(*) FROM blog_likes WHERE blog_id = b.id) as likes_count,
+            (SELECT COUNT(*) FROM blog_dislikes WHERE blog_id = b.id) as dislikes_count
+        FROM blogs b
+        LEFT JOIN users u ON b.user_id = u.id
+        WHERE b.user_id IN (
+            SELECT followingId 
+            FROM followings 
+            WHERE userId = ?
+        )
+        ORDER BY b.created_at DESC
+    `;
+    
+    db.all(query, [userId], (err, rows) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Failed to fetch feed' });
+        }
+
+        const formattedRows = rows.map(row => ({
+            ...row,
+            user: {
+                id: row.user_id,
+                name: row.user_name,
+                profile_picture: row.user_profile_picture
+            }
+        }));
+
+        formattedRows.forEach(row => {
+            delete row.user_name;
+            delete row.user_profile_picture;
+        });
+
+        res.json(formattedRows);
+    });
+});
+
 module.exports = router; 

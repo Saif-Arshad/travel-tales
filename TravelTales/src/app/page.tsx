@@ -132,7 +132,6 @@ const fetchLatestBlogs = async () => {
         </div>
     <section className="bg-white my-8 mt-20">
         <div className="py-4 px-2 mx-auto max-w-screen-xl sm:py-4 lg:px-6">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Explore by Continent</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 h-full">
                 <div className="col-span-2 sm:col-span-1 md:col-span-2 bg-gray-50 h-auto md:h-full flex flex-col">
                     <Link 

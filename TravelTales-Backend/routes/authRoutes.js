@@ -9,7 +9,6 @@ const db = new sqlite3.Database('TravelTales.db');
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 
-// Verify user credentials for password reset
 router.post('/verify-reset-credentials', async (req, res) => {
     const { name, email } = req.body;
     console.log("🚀 ~ router.post ~ name:", name)
@@ -35,7 +34,6 @@ router.post('/verify-reset-credentials', async (req, res) => {
     }
 });
 
-// Update password
 router.post('/reset-password', async (req, res) => {
     const { userId, newPassword } = req.body;
     

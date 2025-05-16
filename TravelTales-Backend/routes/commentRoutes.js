@@ -3,7 +3,6 @@ const router = express.Router();
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('TravelTales.db');
 
-// Get comments for a blog post
 router.get('/blog/:blogId', (req, res) => {
     const { blogId } = req.params;
     
@@ -21,7 +20,6 @@ router.get('/blog/:blogId', (req, res) => {
             return res.status(500).json({ error: 'Failed to fetch comments' });
         }
 
-        // Format the response
         const comments = rows.map(row => ({
             id: row.id,
             content: row.content,
@@ -38,7 +36,6 @@ router.get('/blog/:blogId', (req, res) => {
     });
 });
 
-// Add a new comment
 router.post('/', (req, res) => {
     const { blog_id, user_id, content } = req.body;
     
@@ -57,7 +54,6 @@ router.post('/', (req, res) => {
             return res.status(500).json({ error: 'Failed to create comment' });
         }
 
-        // Fetch the created comment with user details
         db.get(`
             SELECT c.*,
                 u.name as user_name,
@@ -90,7 +86,6 @@ router.post('/', (req, res) => {
     stmt.finalize();
 });
 
-// Update a comment
 router.put('/:id', (req, res) => {
     const { id } = req.params;
     const { content } = req.body;
@@ -119,7 +114,6 @@ router.put('/:id', (req, res) => {
     stmt.finalize();
 });
 
-// Delete a comment
 router.delete('/:id', (req, res) => {
     const { id } = req.params;
     

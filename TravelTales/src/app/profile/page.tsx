@@ -93,7 +93,6 @@ function Page() {
         fetchProfileData();
     }, [user?.id]);
 
-    // Fetch user's blog posts
     useEffect(() => {
         const fetchUserBlogs = async () => {
             if (user?.id) {
@@ -164,11 +163,11 @@ function Page() {
     const handleImageChange = (e: any, fieldName: string) => {
         const file = e.target.files[0];
         if (file) {
-            const previewUrl = URL.createObjectURL(file); // Create a URL for the image preview
+            const previewUrl = URL.createObjectURL(file); 
             setEditProfileData((prev) => ({
                 ...prev,
-                [fieldName]: file, // Store the file object itself for upload
-                [`${fieldName}Preview`]: previewUrl, // Store the preview URL for displaying in the modal
+                [fieldName]: file,
+                [`${fieldName}Preview`]: previewUrl,
             }));
         }
     };
@@ -418,7 +417,6 @@ function Page() {
                     </DialogContent>
                 </Dialog>
 
-                {/* Delete Confirmation Dialog */}
                 <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                     <DialogContent className="p-6">
                         <DialogHeader>

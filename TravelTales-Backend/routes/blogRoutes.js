@@ -28,7 +28,6 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Get all blog posts
 router.get('/', (req, res) => {
     const userId = req.query.user_id;
     let query = `
@@ -56,7 +55,6 @@ router.get('/', (req, res) => {
             return res.status(500).json({ error: 'Failed to fetch blogs' });
         }
 
-        // Format the response to include user information
         const formattedRows = rows.map(row => ({
             ...row,
             user: {
@@ -66,7 +64,6 @@ router.get('/', (req, res) => {
             }
         }));
 
-        // Remove duplicate user fields from the root level
         formattedRows.forEach(row => {
             delete row.user_name;
             delete row.user_profile_picture;
@@ -76,7 +73,6 @@ router.get('/', (req, res) => {
     });
 });
 
-// Get a specific blog post
 router.get('/:id', (req, res) => {
     const { id } = req.params;
     
@@ -99,7 +95,6 @@ router.get('/:id', (req, res) => {
             return res.status(404).json({ error: 'Blog not found' });
         }
 
-        // Format the response to match the frontend expectations
         const response = {
             ...row,
             user: {
@@ -109,7 +104,6 @@ router.get('/:id', (req, res) => {
             }
         };
 
-        // Remove the duplicate user fields from the root level
         delete response.user_name;
         delete response.user_profile_picture;
 
@@ -117,7 +111,6 @@ router.get('/:id', (req, res) => {
     });
 });
 
-// Update a blog post
 router.put('/:id', (req, res) => {
     const { id } = req.params;
     const { title, description, content, country_name, main_image, visit_date } = req.body;
@@ -143,7 +136,6 @@ router.put('/:id', (req, res) => {
     stmt.finalize();
 });
 
-// Delete a blog post
 router.delete('/:id', (req, res) => {
     const { id } = req.params;
     
@@ -159,32 +151,27 @@ router.delete('/:id', (req, res) => {
     });
 });
 
-// Handle likes and dislikes
 router.post('/:id/reaction', async (req, res) => {
     const { id } = req.params;
-    const { user_id, action } = req.body; // action can be 'like', 'dislike', or 'none'
+    const { user_id, action } = req.body; 
     
     if (!['like', 'dislike', 'none'].includes(action)) {
         return res.status(400).json({ error: 'Invalid action' });
     }
     
     db.serialize(() => {
-        // Begin transaction
         db.run('BEGIN TRANSACTION');
         
         try {
-            // First, remove any existing reactions from this user on this blog
             db.run('DELETE FROM blog_likes WHERE user_id = ? AND blog_id = ?', [user_id, id]);
             db.run('DELETE FROM blog_dislikes WHERE user_id = ? AND blog_id = ?', [user_id, id]);
             
-            // Then add the new reaction only if it's not 'none'
             if (action === 'like') {
                 db.run('INSERT INTO blog_likes (user_id, blog_id) VALUES (?, ?)', [user_id, id]);
             } else if (action === 'dislike') {
                 db.run('INSERT INTO blog_dislikes (user_id, blog_id) VALUES (?, ?)', [user_id, id]);
             }
             
-            // Get updated counts
             db.get(`
                 SELECT 
                     (SELECT COUNT(*) FROM blog_likes WHERE blog_id = ?) as likes_count,
@@ -196,7 +183,6 @@ router.post('/:id/reaction', async (req, res) => {
                     return res.status(500).json({ error: 'Failed to get updated counts' });
                 }
                 
-                // Commit transaction
                 db.run('COMMIT', (err) => {
                     if (err) {
                         console.error(err);
@@ -217,7 +203,6 @@ router.post('/:id/reaction', async (req, res) => {
     });
 });
 
-// Get user's reaction to a blog
 router.get('/:id/reaction/:userId', (req, res) => {
     const { id, userId } = req.params;
     
@@ -244,10 +229,8 @@ router.get('/:id/reaction/:userId', (req, res) => {
     });
 });
 
-// Get country information for a blog post
 router.get('/:id/country-info', async (req, res) => {
     try {
-        // First get the blog post to get the country name
         const { id } = req.params;
         
         db.get('SELECT country_name FROM blogs WHERE id = ?', [id], async (err, blog) => {
@@ -261,7 +244,7 @@ router.get('/:id/country-info', async (req, res) => {
 
             try {
                 const countryInfo = await getCountryInfo(blog.country_name);
-                res.json(countryInfo[0]); // Send first match as we expect one country
+                res.json(countryInfo[0]); 
             } catch (error) {
                 console.error('Error fetching country info:', error);
                 res.status(500).json({ error: 'Failed to fetch country information' });

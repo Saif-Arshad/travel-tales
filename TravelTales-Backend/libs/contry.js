@@ -1,4 +1,5 @@
 const axios = require('axios');
+//  Rest COuntry API will provide country name currencies capital and flag image
 const RESTCOUNTRIES_URL = 'https://restcountries.com/v3.1';
 
 exports.getCountryInfo = async (countryName) => {

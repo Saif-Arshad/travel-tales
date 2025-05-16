@@ -4,16 +4,12 @@ const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('TravelTales.db');
 const { getUserById, updateUser, toggleFollow } = require('../controllers/userController');
 
-// Get user by ID
 router.get('/:id', getUserById);
 
-// Update user profile
 router.put('/:id', updateUser);
 
-// Toggle follow status
 router.post('/toggle-follow', toggleFollow);
 
-// Check follow status
 router.get('/follow-status/:targetUserId', (req, res) => {
     const { targetUserId } = req.params;
     const followerId = req.query.followerId;
@@ -38,7 +34,6 @@ router.get('/follow-status/:targetUserId', (req, res) => {
     );
 });
 
-// Follow a user
 router.post('/follow/:targetUserId', (req, res) => {
     const { targetUserId } = req.params;
     const followerId = req.query.followerId;
@@ -54,7 +49,6 @@ router.post('/follow/:targetUserId', (req, res) => {
     db.serialize(() => {
         db.run('BEGIN TRANSACTION');
 
-        // Add to followers table
         db.run(
             'INSERT INTO followers (userId, followerId) VALUES (?, ?)',
             [targetUserId, followerId],
@@ -67,7 +61,6 @@ router.post('/follow/:targetUserId', (req, res) => {
                     return res.status(500).json({ error: 'Database error' });
                 }
 
-                // Add to followings table
                 db.run(
                     'INSERT INTO followings (userId, followingId) VALUES (?, ?)',
                     [followerId, targetUserId],
@@ -86,7 +79,6 @@ router.post('/follow/:targetUserId', (req, res) => {
     });
 });
 
-// Unfollow a user
 router.delete('/unfollow/:targetUserId', (req, res) => {
     const { targetUserId } = req.params;
     const followerId = req.query.followerId;
@@ -102,7 +94,6 @@ router.delete('/unfollow/:targetUserId', (req, res) => {
     db.serialize(() => {
         db.run('BEGIN TRANSACTION');
 
-        // Remove from followers table
         db.run(
             'DELETE FROM followers WHERE userId = ? AND followerId = ?',
             [targetUserId, followerId],
@@ -112,7 +103,6 @@ router.delete('/unfollow/:targetUserId', (req, res) => {
                     return res.status(500).json({ error: 'Database error' });
                 }
 
-                // Remove from followings table
                 db.run(
                     'DELETE FROM followings WHERE userId = ? AND followingId = ?',
                     [followerId, targetUserId],

@@ -2,12 +2,10 @@ const sqlite3 = require('sqlite3').verbose();
 const DB_NAME = 'TravelTales.db';
 const db = new sqlite3.Database(DB_NAME);
 
-// Get user data including followers and following
 const getUserById = async (req, res) => {
   const { id } = req.params;
   
   try {
-    // Get user basic info
     db.get(`SELECT id, name, profile_picture, banner_picture, email FROM users WHERE id = ?`, [id], (err, user) => {
       if (err) {
         return res.status(500).json({ error: 'Database error' });
@@ -16,7 +14,6 @@ const getUserById = async (req, res) => {
         return res.status(404).json({ error: 'User not found' });
       }
 
-      // Get followers
       db.all(`
         SELECT u.id, u.name, u.profile_picture 
         FROM users u 
@@ -27,7 +24,6 @@ const getUserById = async (req, res) => {
           return res.status(500).json({ error: 'Database error' });
         }
 
-        // Get following
         db.all(`
           SELECT u.id, u.name, u.profile_picture 
           FROM users u 
@@ -38,7 +34,6 @@ const getUserById = async (req, res) => {
             return res.status(500).json({ error: 'Database error' });
           }
 
-          // Get counts
           db.get(`
             SELECT 
               (SELECT COUNT(*) FROM followers WHERE userId = ?) as followerCount,
@@ -64,7 +59,6 @@ const getUserById = async (req, res) => {
   }
 };
 
-// Update user profile
 const updateUser = async (req, res) => {
   const { id } = req.params;
   const { name, profile_picture, banner_picture } = req.body;
@@ -90,7 +84,6 @@ const updateUser = async (req, res) => {
   }
 };
 
-// Toggle follow status
 const toggleFollow = async (req, res) => {
   const { userId, followerId } = req.body;
 
@@ -99,7 +92,6 @@ const toggleFollow = async (req, res) => {
   }
 
   try {
-    // Check if already following
     db.get(`SELECT * FROM followers WHERE userId = ? AND followerId = ?`, 
     [userId, followerId], (err, existing) => {
       if (err) {
@@ -107,7 +99,6 @@ const toggleFollow = async (req, res) => {
       }
 
       if (existing) {
-        // Unfollow - remove from both tables
         db.run(`BEGIN TRANSACTION`);
         db.run(`DELETE FROM followers WHERE userId = ? AND followerId = ?`, 
         [userId, followerId]);
@@ -121,7 +112,6 @@ const toggleFollow = async (req, res) => {
           res.json({ message: 'Unfollowed successfully' });
         });
       } else {
-        // Follow - add to both tables
         db.run(`BEGIN TRANSACTION`);
         db.run(`INSERT INTO followers (userId, followerId) VALUES (?, ?)`, 
         [userId, followerId]);

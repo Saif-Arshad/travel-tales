@@ -141,10 +141,8 @@ export default function BlogDetail() {
                 action: userReaction === action ? 'none' : action
             });
             
-            // Update reaction state
             setUserReaction(userReaction === action ? null : action);
             
-            // Update counts directly from the response
             if (blog) {
                 setBlog({
                     ...blog,
@@ -301,7 +299,6 @@ export default function BlogDetail() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-12">
-            {/* Hero Section with Cover Image */}
             <div className="relative h-[60vh] w-full">
                 <img
                     src={blog.main_image || "/default-blog-cover.jpg"}
@@ -327,9 +324,7 @@ export default function BlogDetail() {
                 </div>
             </div>
 
-            {/* Main Content */}
             <div className="max-w-4xl mx-auto px-4 py-8">
-                {/* Author Section */}
                 <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm mb-8">
                     <Link href={`/profile/${blog.user_id}`} className="flex items-center gap-3">
                         <img
@@ -369,12 +364,10 @@ export default function BlogDetail() {
                     )}
                 </div>
 
-                {/* Blog Content */}
                 <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
                     <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: blog.content }} />
                 </div>
 
-                {/* Country Information Section */}
                 <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
                     <h2 className="text-2xl font-bold mb-6">About {blog.country_name}</h2>
                     {loadingCountryInfo ? (
@@ -425,7 +418,6 @@ export default function BlogDetail() {
                     )}
                 </div>
 
-                {/* Reactions Section */}
                 <div className="flex items-center justify-center gap-6">
                     <button
                         onClick={() => handleReaction('like')}
@@ -453,11 +445,9 @@ export default function BlogDetail() {
                     </button>
                 </div>
 
-                {/* Comments Section */}
                 <div className="bg-white p-6 rounded-lg shadow-sm mt-8">
                     <h2 className="text-2xl font-bold mb-6">Comments</h2>
                     
-                    {/* Comment Form */}
                     <div className="flex gap-4 mb-8">
                         <img
                             src={user?.profile_picture || "/default-profile.png"}
@@ -495,7 +485,6 @@ export default function BlogDetail() {
                         </div>
                     </div>
 
-                    {/* Comments List */}
                     {isLoadingComments ? (
                         <div className="flex justify-center py-8">
                             <Loader2 className="h-8 w-8 animate-spin" />

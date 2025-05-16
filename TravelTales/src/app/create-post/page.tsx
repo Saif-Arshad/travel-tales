@@ -142,7 +142,6 @@ function CreatePost() {
             {isEditing ? 'Edit Your Travel Story' : 'Create Your Travel Story'}
           </h1>
           
-          {/* Image Upload Section */}
           <div 
             className={`relative h-80 w-full rounded-2xl overflow-hidden mb-8 group transition-all duration-300 ${
               isDragging ? 'border-4 border-blue-500 border-dashed' : ''
@@ -188,7 +187,6 @@ function CreatePost() {
             </div>
           </div>
 
-          {/* Title Input */}
           <input 
             type="text" 
             placeholder='Give your story a title...' 
@@ -197,7 +195,6 @@ function CreatePost() {
             onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
           />
 
-          {/* Description Textarea */}
           <textarea    
             cols={4} 
             rows={4} 
@@ -207,7 +204,6 @@ function CreatePost() {
             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
           />
 
-          {/* Country and Date Selection */}
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8'>
             <div className='relative'>
               <label htmlFor="country" className='block text-sm font-medium text-gray-700 mb-2'>
@@ -247,7 +243,6 @@ function CreatePost() {
             </div>
           </div>
 
-          {/* Rich Text Editor */}
           <div className="mb-8">
             <label className='block text-sm font-medium text-gray-700 mb-2'>
               Share your story
@@ -257,7 +252,6 @@ function CreatePost() {
             </div>
           </div>
 
-          {/* Submit Button */}
           <div className="flex justify-end">
             <button 
               onClick={handleSubmit}

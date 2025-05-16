@@ -102,14 +102,12 @@ function initDB() {
       )
     `);
 
-    // Add description column to blogs table if it doesn't exist
     db.all("PRAGMA table_info(blogs)", (err, rows) => {
       if (err) {
         console.error("Error checking table info:", err);
         return;
       }
       
-      // Check if description column exists
       const hasDescription = rows && Array.isArray(rows) && rows.some(row => row.name === 'description');
       console.log("Table columns:", rows);
       
@@ -131,7 +129,6 @@ function initDB() {
   });
 }
 
-// Helper functions for followers/followings
 function arrayToString(arr) {
   return Array.isArray(arr) ? arr.join(',') : '';
 }
